@@ -22,8 +22,11 @@
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+#include "stm32f407xx.h"
+
 int main(void)
 {
     /* Loop forever */
+
 	for(;;);
 }
