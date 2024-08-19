@@ -17,7 +17,7 @@ typedef struct
 	uint8_t GPIO_PinOutputSpeed;			// EGPIO_OutputSpeed
 	uint8_t GPIO_PinPullUpPullDownMode;		// EGPIO_PullUpPullDownMode
 	uint8_t GPIO_PinOutputType;				// EGPIO_OutputType
-	uint8_t GPIO_PinAltFunMode;				//
+	uint8_t GPIO_PinAltFunMode;				// EGPIO_AltFunMode
 } GPIO_PinConfig_t;
 
 typedef struct
@@ -38,11 +38,10 @@ typedef enum EGPIO_IRQControlState
 	GPIO_IRQ_ENABLE = 1,
 } GPIO_IRQControlState;
 
-
 typedef enum EGPIO_PinState
 {
-	GPIO_LOW = 0,
-	GPIO_HIGH = 1,
+	GPIO_LOW = 0x0,
+	GPIO_HIGH = 0x1,
 } EGPIO_PinState;
 
 typedef enum EGPIO_Mode
@@ -72,9 +71,9 @@ typedef enum EGPIO_OutputSpeed
 
 typedef enum EGPIO_PullUpPullDownMode
 {
-	GPIO_NO_PULL_DONW_AND_UP = 0,
-	GPIO_PULL_DONW = 1,
-	GPIO_PULL_UP = 2,
+	GPIO_NO_PULL_DONW_AND_UP = 0x0,
+	GPIO_PULL_DONW = 0x1,
+	GPIO_PULL_UP = 0x2,
 } EGPIO_PullUpPullDownMode;
 
 typedef enum EGPIO_PinNumber
@@ -97,6 +96,27 @@ typedef enum EGPIO_PinNumber
     GPIO_PIN_NUM_15 = 15,
 } EGPIO_PinNumber;
 
+typedef enum EGPIO_AltFunMode
+{
+	GPIO_ALT_FUN_AF0 = 0x0,
+	GPIO_ALT_FUN_AF1 = 0x1,
+	GPIO_ALT_FUN_AF2 = 0x2,
+	GPIO_ALT_FUN_AF3 = 0x3,
+	GPIO_ALT_FUN_AF4 = 0x4,
+	GPIO_ALT_FUN_AF5 = 0x5,
+	GPIO_ALT_FUN_AF6 = 0x6,
+	GPIO_ALT_FUN_AF7 = 0x7,
+	GPIO_ALT_FUN_AF8 = 0x8,
+	GPIO_ALT_FUN_AF9 = 0x9,
+	GPIO_ALT_FUN_AF10 = 0xA,
+	GPIO_ALT_FUN_AF11 = 0xB,
+	GPIO_ALT_FUN_AF12 = 0xC,
+	GPIO_ALT_FUN_AF13 = 0xD,
+	GPIO_ALT_FUN_AF14 = 0xE,
+	GPIO_ALT_FUN_AF15 = 0xF,
+} EGPIO_AltFunMode;
+
+
 /*
  * Gpio clock setup
  */
@@ -117,7 +137,7 @@ uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t* pGPIOx);
 /*
  * Gpio write to output pin/port
  */
-void GPIO_WriteToOutputPin(GPIO_RegDef_t* pGPIOx, uint8_t pinNumber, uint8_t pinState);
+void GPIO_WriteToOutputPin(GPIO_RegDef_t* pGPIOx, EGPIO_PinNumber pinNumber, EGPIO_PinState pinState);
 void GPIO_WriteToOutputPort(GPIO_RegDef_t* pGPIOx, uint16_t portState);
 
 /*
@@ -128,19 +148,14 @@ void GPIO_ToggleOutputPin(GPIO_RegDef_t* pGPIOx, uint8_t pinNumber);
 /*
  * Gpio IRQ config
  */
-void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, GPIO_IRQControlState cotrolState);
+void GPIO_IRQInterruptConfig(uint8_t IRQNumber, GPIO_IRQControlState state);
+
+void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 
 /*
  * Gpio IRQ callback
  */
-void GPIO_IRQHandling(uint8_t pinNumber);
-
-
-
-
-
-
-
+void GPIO_IRQHandling(EGPIO_PinNumber pinNumber);
 
 
 #endif /* INC_STM32407XX_GPIO_DRIVER_H_ */
