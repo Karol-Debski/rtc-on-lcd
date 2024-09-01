@@ -10,24 +10,6 @@
 
 #include "stm32f407xx.h"
 
-typedef struct
-{
-	ESPI_DeviceMode 				SPI_DeviceMode;
-	ESPI_BusConfig 					SPI_BusConfig;
-	ESPI_SclkSpeed 					SPI_SclkSpeed;
-	ESPI_DataFrameFormat 			SPI_DataFrameFormat;
-	ESPI_ClockPolarity 				SPI_ClockPolarity;
-	ESPI_ClockPhase 				SPI_ClockPhase;
-	ESPI_SoftwareSlaveManagment 	SPI_SoftwareSlaveManagment;
-}SPI_Config_t;
-
-
-typedef struct
-{
-	SPI_RegDef_t*	pSPIx;
-	SPI_Config_t	SPIConfig;
-}SPI_Handle_t;
-
 
 typedef enum ESPI_BusConfig
 {
@@ -62,8 +44,8 @@ typedef enum ESPI_DataFrameFormat
 
 typedef enum ESPI_ClockPolarity
 {
-	SPI_LOW_WHEN_IDLE = 0x0,
-	SPI_HIGH_WHEN_IDLE = 0x1,
+	SPI_IDLE_STATE_LOW = 0x0,
+	SPI_IDLE_STATE_HIGH = 0x1,
 }ESPI_ClockPolarity;
 
 typedef enum ESPI_ClockPhase
@@ -91,6 +73,24 @@ typedef enum ESPI_IRQControlState
 	SPI_IRQ_ENABLE = 0x1,
 }ESPI_IRQControlState;
 
+typedef enum ESPI_ControlState
+{
+	SPI_DISABLE = 0x0,
+	SPI_ENABLE = 0x1,
+}ESPI_ControlState;
+
+typedef enum ESPI_SSI_ControlState
+{
+	SPI_NSS_LOW = 0x0,
+	SPI_NSS_HIGH = 0x1,
+}ESPI_SSI_ControlState;
+
+typedef enum ESPI_SSOE_ControlState
+{
+	SPI_SLAVE_SELECT_CONFIG_MULTIMASTER = 0x0,
+	SPI_SLAVE_SELECT_CONFIG_SINGLE_MASTER = 0x1,
+}ESPI_SSOE_ControlState;
+
 /******************************** SPI Register Bit fields START ********************************/
 typedef enum ESPI_CR1_BitFieldsPositions
 {
@@ -110,6 +110,17 @@ typedef enum ESPI_CR1_BitFieldsPositions
 	BIDIMODE = 15,
 }ESPI_CR1_BitFieldsPositions;
 
+typedef enum ESPI_CR2_BitFieldsPositions
+{
+	RXDMAEN = 0,
+	TXDMAEN = 1,
+	SSOE = 2,
+	FRF = 4,
+	ERRIE = 5,
+	RXNEIE = 6,
+	TXEIE = 7,
+}ESPI_CR2_BitFieldsPositions;
+
 typedef enum ESPI_SR_BitFieldsPositions
 {
 	RXNE = 0,
@@ -125,6 +136,26 @@ typedef enum ESPI_SR_BitFieldsPositions
 
 /******************************** SPI Register Bit fields END ********************************/
 
+
+typedef struct
+{
+	ESPI_DeviceMode 				SPI_DeviceMode;
+	ESPI_BusConfig 					SPI_BusConfig;
+	ESPI_SclkSpeed 					SPI_SclkSpeed;
+	ESPI_DataFrameFormat 			SPI_DataFrameFormat;
+	ESPI_ClockPolarity 				SPI_ClockPolarity;
+	ESPI_ClockPhase 				SPI_ClockPhase;
+	ESPI_SoftwareSlaveManagment 	SPI_SoftwareSlaveManagment;
+}SPI_Config_t;
+
+
+typedef struct
+{
+	SPI_RegDef_t*	pSPIx;
+	SPI_Config_t	SPIConfig;
+}SPI_Handle_t;
+
+
 /*
  * Clock control
  */
@@ -138,13 +169,18 @@ void SPI_Init(SPI_Handle_t* pSPIHandle);
 
 void SPI_DeInit(SPI_RegDef_t* pSPIx);
 
+void SPI_PeripheralControl(SPI_RegDef_t* pSPIx, ESPI_ControlState controlState);
+
+void SPI_SSIConfig(SPI_RegDef_t* pSPIx, ESPI_SSI_ControlState controlState);
+
+void SPI_SSOEConfig(SPI_RegDef_t* pSPIx, ESPI_SSOE_ControlState controlState);
 
 /*
  * Data send and receive
  */
-void SPI_SendData(SPI_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t length);
+void SPI_SendData(SPI_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t size);
 
-void SPI_ReceiveData(SPI_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t length);
+void SPI_ReceiveData(SPI_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t size);
 
 
 /*

@@ -131,16 +131,16 @@
 /*
  * Clock enable macros for SPIx peripherals
  */
-#define SPI1_PERI_CLOCK_EN() 		(RCC->APB2ENR |= (1 << 12))
-#define SPI2_I2S2_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1 << 14))
-#define SPI3_I2S3_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1 << 15))
+#define SPI1_PERI_CLOCK_EN() 		(RCC->APB2ENR |= (1U << 12))
+#define SPI2_I2S2_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1U << 14))
+#define SPI3_I2S3_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1U << 15))
 
 /*
  * Clock disable macros for SPIx peripherals
  */
-#define SPI1_PERI_CLOCK_DIS() 		(RCC->APB2ENR &= ~(1 << 12))
-#define SPI2_I2S2_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1 << 14))
-#define SPI3_I2S3_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1 << 15))
+#define SPI1_PERI_CLOCK_DIS() 		(RCC->APB2ENR &= ~(1U << 12))
+#define SPI2_I2S2_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1U << 14))
+#define SPI3_I2S3_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1U << 15))
 
 /*
  * Clock enable macros for USARTx peripherals
@@ -198,9 +198,9 @@
 #define I2C2_BASEADDR						(APB1PERIPH_BASEADDR + 0x5800)
 #define I2C3_BASEADDR						(APB1PERIPH_BASEADDR + 0x5C00)
 
-#define SPI1_BASEADDR						(APB2PERIPH_BASEADDR + 0X3000)
-#define SPI2_I2S2_BASEADDR					(APB1PERIPH_BASEADDR + 0x3800)
-#define SPI3_I2S3_BASEADDR					(APB1PERIPH_BASEADDR + 0x3C00)
+#define SPI1_BASEADDR						(APB2PERIPH_BASEADDR + 0X3000U)
+#define SPI2_I2S2_BASEADDR					(APB1PERIPH_BASEADDR + 0x3800U)
+#define SPI3_I2S3_BASEADDR					(APB1PERIPH_BASEADDR + 0x3C00U)
 
 
 
@@ -245,6 +245,8 @@ typedef struct
 	__vo uint32_t RESERVED2;
 	__vo uint32_t RESERVED3;
 	__vo uint32_t AHB1ENR;
+	__vo uint32_t AHB2ENR;
+	__vo uint32_t AHB3ENR;
 	__vo uint32_t RESERVED4;
 	__vo uint32_t APB1ENR;
 	__vo uint32_t APB2ENR;
@@ -264,8 +266,6 @@ typedef struct
 	__vo uint32_t RESERVED11;
 	__vo uint32_t SSCGR;
 	__vo uint32_t PLLI2SCFGR;
-	__vo uint32_t PLLSAICFGR;
-	__vo uint32_t DCKCFGR;
 }RCC_RegDef_t;
 
 /*
@@ -327,17 +327,11 @@ typedef struct
 
 
 #define SPI1 		((SPI_RegDef_t*)SPI1_BASEADDR)
-#define SPI2_I2S2 	((SPI_RegDef_t*)SPI2_I2S2_BASEADDR)
-#define SPI3_I2S3 	((SPI_RegDef_t*)SPI3_I2S3_BASEADDR)
+#define SPI2	 	((SPI_RegDef_t*)SPI2_I2S2_BASEADDR)
+#define SPI3 		((SPI_RegDef_t*)SPI3_I2S3_BASEADDR)
 
 
 
-#define SPI1_BASEADDR						(APB2PERIPH_BASEADDR + 0X3000)
-#define SPI2_I2S2_BASEADDR					(APB1PERIPH_BASEADDR + 0x3800)
-#define SPI3_I2S3_BASEADDR					(APB1PERIPH_BASEADDR + 0x3C00)
-#define SPI4_BASEADDR						(APB2PERIPH_BASEADDR + 0x3400)
-#define SPI5_BASEADDR						(APB2PERIPH_BASEADDR + 0x5000)
-#define SPI6_BASEADDR						(APB2PERIPH_BASEADDR + 0x5400)
 
 
 
@@ -371,12 +365,12 @@ typedef struct
 
 #define BIT_MASK(bitNum)								((1U) << (bitNum))
 #define BIT_CLEAR(reg, bitNum)							((reg) & ~BIT_MASK(bitNum))
-#define BIT_SET_VAL(reg, val, bitNum)					( BIT_CLEAR(reg, bitNum) | (((val) << bitNum) & BIT_MASK(bitNum)))
-#define BIT_READ(reg, bitNum)							(0U != ((reg) & BIT_MASK(bitNum))
+#define BIT_SET_VAL(reg, val, bitNum)					(reg = (BIT_CLEAR(reg, bitNum) | (((val) << bitNum) & BIT_MASK(bitNum))))
+#define BIT_READ(reg, bitNum)							(0U != ((reg) & BIT_MASK(bitNum)))
 
 #define MULTI_BIT_MASK(bitNum, len)						(((1U << len) - 1U) << bitNum)
 #define MULTI_BIT_CLEAR(reg, bitNum, len)				((reg) & ~(MULTI_BIT_MASK(bitNum, len)))
-#define MULTI_BIT_SET_VAL(reg, val, bitNum, len)		(MULTI_BIT_CLEAR(reg, bitNum, len) | ((val << bitNum) & MULTI_BIT_MASK(bitNum, len)))
+#define MULTI_BIT_SET_VAL(reg, val, bitNum, len)		(reg = (MULTI_BIT_CLEAR(reg, bitNum, len) | ((val << bitNum) & MULTI_BIT_MASK(bitNum, len))))
 #define MULTI_BIT_READ(reg, bitNum, len)				(((reg) & MULTI_BIT_MASK(bitNum, len)) >> bitNum)
 
 #include "stm32407xx_gpio_driver.h"
