@@ -9,8 +9,10 @@
 #define INC_STM32F407XX_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define __vo volatile
+#define __weak __attribute__((weak))
 
 /************************************************** START: Processor specific details **************************************************/
 
@@ -48,7 +50,7 @@
  * AHBx and APBx Bus Peripheral
  */
 #define PERIPH_BASEADDR 		0X40000000U
-#define APB1PERIPH_BASEADDR		PERIPH__BASEADDR
+#define APB1PERIPH_BASEADDR		PERIPH_BASEADDR
 #define APB2PERIPH_BASEADDR		0x40010000U
 #define AHB1PERIPH_BASEADDR		0x40020000U
 #define AHB2PERIPH_BASEADDR		0x50000000U
@@ -81,6 +83,8 @@
  * SYSCFG base addr
  */
 #define SYSCFG_BASEADDR		(APB2PERIPH_BASEADDR + 0x3800)
+
+
 
 /*
  * Clock enable macros for GPIOx
@@ -129,7 +133,16 @@
 /*
  * Clock enable macros for SPIx peripherals
  */
-#define SPI1_PERI_CLOCK_EN() 	(RCC->APB2ENR |= (1 << 12))
+#define SPI1_PERI_CLOCK_EN() 		(RCC->APB2ENR |= (1U << 12))
+#define SPI2_I2S2_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1U << 14))
+#define SPI3_I2S3_PERI_CLOCK_EN() 	(RCC->APB1ENR |= (1U << 15))
+
+/*
+ * Clock disable macros for SPIx peripherals
+ */
+#define SPI1_PERI_CLOCK_DIS() 		(RCC->APB2ENR &= ~(1U << 12))
+#define SPI2_I2S2_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1U << 14))
+#define SPI3_I2S3_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1U << 15))
 
 /*
  * Clock enable macros for USARTx peripherals
@@ -187,8 +200,13 @@
 #define I2C2_BASEADDR						(APB1PERIPH_BASEADDR + 0x5800)
 #define I2C3_BASEADDR						(APB1PERIPH_BASEADDR + 0x5C00)
 
-#define SPI2_BASEADDR						(APB1PERIPH_BASEADDR + 0x3800)
-#define SPI3_BASEADDR						(APB1PERIPH_BASEADDR + 0x3C00)
+#define SPI1_BASEADDR						(APB2PERIPH_BASEADDR + 0X3000U)
+#define SPI2_I2S2_BASEADDR					(APB1PERIPH_BASEADDR + 0x3800U)
+#define SPI3_I2S3_BASEADDR					(APB1PERIPH_BASEADDR + 0x3C00U)
+
+
+
+
 
 #define USART2_BASEADDR						(APB1PERIPH_BASEADDR + 0x4400)
 #define USART3_BASEADDR						(APB1PERIPH_BASEADDR + 0x4800)
@@ -229,6 +247,8 @@ typedef struct
 	__vo uint32_t RESERVED2;
 	__vo uint32_t RESERVED3;
 	__vo uint32_t AHB1ENR;
+	__vo uint32_t AHB2ENR;
+	__vo uint32_t AHB3ENR;
 	__vo uint32_t RESERVED4;
 	__vo uint32_t APB1ENR;
 	__vo uint32_t APB2ENR;
@@ -248,8 +268,6 @@ typedef struct
 	__vo uint32_t RESERVED11;
 	__vo uint32_t SSCGR;
 	__vo uint32_t PLLI2SCFGR;
-	__vo uint32_t PLLSAICFGR;
-	__vo uint32_t DCKCFGR;
 }RCC_RegDef_t;
 
 /*
@@ -280,6 +298,23 @@ typedef struct
 } SYSCFG_RegDef_t;
 
 /*
+ * peripheral register definition structure for SPI
+ */
+typedef struct
+{
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t SR;
+	__vo uint32_t DR;
+	__vo uint32_t CRCPR;
+	__vo uint32_t RXCRCR;
+	__vo uint32_t TXCRCR;
+	__vo uint32_t I2SCFGR;
+	__vo uint32_t I2SPR;
+}SPI_RegDef_t;
+
+
+/*
  * Peripherals definitions - base address type casted to x_RegDef_t)
  */
 #define GPIOA 	((GPIO_RegDef_t*)GPIOA_BASEADDR)
@@ -293,11 +328,23 @@ typedef struct
 #define GPIOI 	((GPIO_RegDef_t*)GPIOI_BASEADDR)
 
 
+#define SPI1 		((SPI_RegDef_t*)SPI1_BASEADDR)
+#define SPI2	 	((SPI_RegDef_t*)SPI2_I2S2_BASEADDR)
+#define SPI3 		((SPI_RegDef_t*)SPI3_I2S3_BASEADDR)
+
+
+
+
+
+
+
 #define RCC 	((RCC_RegDef_t*)RCC_BASEADDR)
 
 #define EXTI 	((EXTI_RegDef_t*)EXTI_BASEADDR)
 
 #define SYSCFG	((SYSCFG_RegDef_t*)SYSCFG_BASEADDR)
+
+
 
 #define IRQ_NUM_EXTI0 		6
 #define IRQ_NUM_EXTI1 		7
@@ -306,6 +353,12 @@ typedef struct
 #define IRQ_NUM_EXTI4 		10
 #define IRQ_NUM_EXTI9_5 	23
 #define IRQ_NUM_EXTI15_10 	40
+#define IRQ_NUM_SPI1		35
+#define IRQ_NUM_SPI2		36
+#define IRQ_NUM_SPI3		51
+
+
+
 
 /************************************************** STOP: MCU specific details **************************************************/
 
@@ -318,6 +371,17 @@ typedef struct
 #define RESET 	DISABLE
 
 
+#define BIT_MASK(bitNum)								((1U) << (bitNum))
+#define BIT_CLEAR(reg, bitNum)							((reg) & ~BIT_MASK(bitNum))
+#define BIT_SET_VAL(reg, val, bitNum)					(reg = (BIT_CLEAR(reg, bitNum) | (((val) << bitNum) & BIT_MASK(bitNum))))
+#define BIT_READ(reg, bitNum)							(0U != ((reg) & BIT_MASK(bitNum)))
+
+#define MULTI_BIT_MASK(bitNum, len)						(((1U << len) - 1U) << bitNum)
+#define MULTI_BIT_CLEAR(reg, bitNum, len)				((reg) & ~(MULTI_BIT_MASK(bitNum, len)))
+#define MULTI_BIT_SET_VAL(reg, val, bitNum, len)		(reg = (MULTI_BIT_CLEAR(reg, bitNum, len) | ((val << bitNum) & MULTI_BIT_MASK(bitNum, len))))
+#define MULTI_BIT_READ(reg, bitNum, len)				(((reg) & MULTI_BIT_MASK(bitNum, len)) >> bitNum)
+
 #include "stm32407xx_gpio_driver.h"
+#include "stm32f407xx_spi_driver.h"
 
 #endif /* INC_STM32F407XX_H_ */

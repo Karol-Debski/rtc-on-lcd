@@ -130,10 +130,16 @@ void GPIO_Init(GPIO_Handle_t* pGPIOHandle)
 	}
 	else if(pinMode == GPIO_MODE_ALT_FN)
 	{
+		/*Pin mode*/
+		pGPIOHandle->pGPIOx->MODER = (pGPIOHandle->pGPIOx->MODER & ~(pinMode << pinNumber*2)) | (pinMode<< pinNumber*2);
+
 		uint8_t positionOfAFRegister = pinNumber / GPIO_PIN_NUM_8;
 		uint8_t pinNumberInAFRegister = pinNumber % GPIO_PIN_NUM_8;
 
-		pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] = (pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] & ~(pinAltFunMode << pinNumberInAFRegister*4));
+		//pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] =
+		MULTI_BIT_SET_VAL(pGPIOHandle->pGPIOx->AFR[positionOfAFRegister], pinAltFunMode, pinNumberInAFRegister*4, 4);
+		//uint32_t a=(pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] & ~(pinAltFunMode << pinNumberInAFRegister*4));
+		//pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] = a;
 		return;
 	}
 	else if( (pinMode == GPIO_MODE_IT_FT) || (pinMode == GPIO_MODE_IT_RT) || (pinMode == GPIO_MODE_IT_RFT) )
