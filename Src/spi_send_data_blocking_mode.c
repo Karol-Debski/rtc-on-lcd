@@ -203,7 +203,6 @@ void sensorReadArduino()
 
 		SPI_SendData(SPI2, &dummyTxMessage, 1);
 		SPI_ReceiveData(SPI2, &readFromSensor, 1);
-		uint8_t a=1;
 	}
 }
 

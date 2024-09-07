@@ -134,6 +134,29 @@ typedef enum ESPI_SR_BitFieldsPositions
 	FRE = 8,
 }ESPI_SR_BitFieldsPositions;
 
+typedef enum ESPI_States
+{
+	SPI_READY = 0,
+	SPI_BUSY_IN_RX = 1,
+	SPI_BUSY_IN_TX = 2,
+}ESPI_States;
+
+typedef enum ESPI_Status
+{
+    SPI_OK = 0,
+    SPI_ERROR = 1,
+    SPI_TIMEOUT = 2,
+    SPI_BUSY = 3
+} ESPI_Status;
+
+typedef enum ESPI_Event
+{
+    SPI_EVENT_TX_COMPLETE = 0,
+	SPI_EVENT_RX_COMPLETE = 1,
+	SPI_EVENT_OVR_ERROR = 2,
+	SPI_EVENT_CRC_ERROR = 3,
+} ESPI_Event;
+
 /******************************** SPI Register Bit fields END ********************************/
 
 
@@ -153,6 +176,11 @@ typedef struct
 {
 	SPI_RegDef_t*	pSPIx;
 	SPI_Config_t	SPIConfig;
+	uint8_t*		pTxBuffer;
+	uint8_t*		pRxBuffer;
+	uint32_t		txLen;
+	uint32_t		rxLen;
+	ESPI_States		state;
 }SPI_Handle_t;
 
 
@@ -182,6 +210,26 @@ void SPI_SendData(SPI_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t size);
 
 void SPI_ReceiveData(SPI_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t size);
 
+ESPI_Status SPI_SendDataIT(SPI_Handle_t* pSPIHandlex, uint8_t* pTxBuffer, uint32_t size);
+
+ESPI_Status SPI_ReceiveDataIT(SPI_Handle_t* pSPIHandlex, uint8_t* pRxBuffer, uint32_t size);
+
+void SPI_IRQCloseTransmisson(SPI_Handle_t* pSPIHandle);
+
+void SPI_IRQCloseReception(SPI_Handle_t* pSPIHandle);
+
+/*
+ * Application callback
+ */
+
+void SPI_ApplicationEventCallback(SPI_Handle_t* pSPIHandlex, ESPI_Event spiEvent);
+
+/*
+ * Error handle
+ */
+
+
+void SPI_ClearOVRFlag(SPI_Handle_t* pSPIHandle);
 
 /*
  * IRQ config and ISR handling
