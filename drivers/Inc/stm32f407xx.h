@@ -129,6 +129,15 @@
  * Clock enable macros for I2Cx peripherals
  */
 #define I2C1_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1 << 21))
+#define I2C2_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1 << 22))
+#define I2C3_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1 << 23))
+
+/*
+ * Reset I2Cx registers MACRO
+ */
+#define I2C1_REGISTERS_RESET() do{(RCC->APB1RSTR |= (1<<21)); (RCC->APB1RSTR &= ~(1<<21));}while(0)
+#define I2C2_REGISTERS_RESET() do{(RCC->APB1RSTR |= (1<<22)); (RCC->APB1RSTR &= ~(1<<22));}while(0)
+#define I2C3_REGISTERS_RESET() do{(RCC->APB1RSTR |= (1<<23)); (RCC->APB1RSTR &= ~(1<<23));}while(0)
 
 /*
  * Clock enable macros for SPIx peripherals
@@ -164,7 +173,8 @@
  * Clock disable macros for I2Cx peripherals
  */
 #define I2C1_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 21))
-
+#define I2C2_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 22))
+#define I2C3_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 23))
 /*
  * Clock disable macros for SPIx peripherals
  */
@@ -315,6 +325,23 @@ typedef struct
 
 
 /*
+ * peripheral register definition structure for I2C
+ */
+typedef struct
+{
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t OAR1;
+	__vo uint32_t OAR2;
+	__vo uint32_t DR;
+	__vo uint32_t SR1;
+	__vo uint32_t SR2;
+	__vo uint32_t CCR;
+	__vo uint32_t TRISE;
+	__vo uint32_t FLTR;
+}I2C_RegDef_t;
+
+/*
  * Peripherals definitions - base address type casted to x_RegDef_t)
  */
 #define GPIOA 	((GPIO_RegDef_t*)GPIOA_BASEADDR)
@@ -332,8 +359,9 @@ typedef struct
 #define SPI2	 	((SPI_RegDef_t*)SPI2_I2S2_BASEADDR)
 #define SPI3 		((SPI_RegDef_t*)SPI3_I2S3_BASEADDR)
 
-
-
+#define I2C1 		((I2C_RegDef_t*)I2C1_BASEADDR)
+#define I2C2 		((I2C_RegDef_t*)I2C2_BASEADDR)
+#define I2C3 		((I2C_RegDef_t*)I2C3_BASEADDR)
 
 
 
@@ -383,5 +411,6 @@ typedef struct
 
 #include "stm32407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
+#include "stm32f407xx_i2c_driver.h"
 
 #endif /* INC_STM32F407XX_H_ */
