@@ -58,7 +58,7 @@ typedef enum EGPIO_Mode
 typedef enum EGPIO_OutputType
 {
 	GPIO_OUTPUT_TYPE_PP = 0x0,
-	GPIO_OUTPUT_TYPE_OP = 0x1,
+	GPIO_OUTPUT_TYPE_OD = 0x1,
 } EGPIO_OutputType;
 
 typedef enum EGPIO_OutputSpeed

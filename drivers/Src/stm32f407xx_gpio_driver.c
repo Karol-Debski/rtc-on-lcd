@@ -107,40 +107,10 @@ void GPIO_Init(GPIO_Handle_t* pGPIOHandle)
 	uint32_t pinPullUpPullDownMode = pGPIOHandle->GPIO_PinConfig.GPIO_PinPullUpPullDownMode;
 	uint32_t pinAltFunMode = pGPIOHandle->GPIO_PinConfig.GPIO_PinAltFunMode;
 
-
-	if(pinMode == GPIO_MODE_INPUT)
+	if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode <= GPIO_MODE_ANALOG)
 	{
 		/*Pin mode*/
 		pGPIOHandle->pGPIOx->MODER = (pGPIOHandle->pGPIOx->MODER & ~(pinMode << pinNumber*2)) | (pinMode<< pinNumber*2);
-		/*Pin pull up pull down mode*/
-		pGPIOHandle->pGPIOx->PUPDR = (pGPIOHandle->pGPIOx->PUPDR & ~(pinPullUpPullDownMode << pinNumber*2)) | (pinPullUpPullDownMode<< pinNumber*2);
-		return;
-	}
-	else if(pinMode == GPIO_MODE_OUTPUT)
-	{
-		/*Pin mode*/
-		pGPIOHandle->pGPIOx->MODER = (pGPIOHandle->pGPIOx->MODER & ~(pinMode << pinNumber*2)) | (pinMode<< pinNumber*2);
-		/*Pin output speed*/
-		pGPIOHandle->pGPIOx->OSPEEDR = (pGPIOHandle->pGPIOx->OSPEEDR & ~(pinOutputSpeed << pinNumber*2)) | (pinOutputSpeed<< pinNumber*2);
-		/*Pin output type*/
-		pGPIOHandle->pGPIOx->OTYPER = (pGPIOHandle->pGPIOx->OTYPER & ~(pinOutputType << pinNumber)) | (pinOutputType<< pinNumber);
-		/*Pin pull up pull down mode*/
-		pGPIOHandle->pGPIOx->PUPDR = (pGPIOHandle->pGPIOx->PUPDR & ~(pinPullUpPullDownMode << pinNumber*2)) | (pinPullUpPullDownMode<< pinNumber*2);
-		return;
-	}
-	else if(pinMode == GPIO_MODE_ALT_FN)
-	{
-		/*Pin mode*/
-		pGPIOHandle->pGPIOx->MODER = (pGPIOHandle->pGPIOx->MODER & ~(pinMode << pinNumber*2)) | (pinMode<< pinNumber*2);
-
-		uint8_t positionOfAFRegister = pinNumber / GPIO_PIN_NUM_8;
-		uint8_t pinNumberInAFRegister = pinNumber % GPIO_PIN_NUM_8;
-
-		//pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] =
-		MULTI_BIT_SET_VAL(pGPIOHandle->pGPIOx->AFR[positionOfAFRegister], pinAltFunMode, pinNumberInAFRegister*4, 4);
-		//uint32_t a=(pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] & ~(pinAltFunMode << pinNumberInAFRegister*4));
-		//pGPIOHandle->pGPIOx->AFR[positionOfAFRegister] = a;
-		return;
 	}
 	else if( (pinMode == GPIO_MODE_IT_FT) || (pinMode == GPIO_MODE_IT_RT) || (pinMode == GPIO_MODE_IT_RFT) )
 	{
@@ -169,9 +139,25 @@ void GPIO_Init(GPIO_Handle_t* pGPIOHandle)
 
 		/* enable delivery interrupt */
 		EXTI->IMR |= (1 << pinNumber);
-		return;
 	}
 
+	/*Pin output speed*/
+	pGPIOHandle->pGPIOx->OSPEEDR = (pGPIOHandle->pGPIOx->OSPEEDR & ~(pinOutputSpeed << pinNumber*2)) | (pinOutputSpeed<< pinNumber*2);
+	/*Pin output type*/
+	pGPIOHandle->pGPIOx->OTYPER = (pGPIOHandle->pGPIOx->OTYPER & ~(pinOutputType << pinNumber)) | (pinOutputType<< pinNumber);
+	/*Pin pull up pull down mode*/
+	pGPIOHandle->pGPIOx->PUPDR = (pGPIOHandle->pGPIOx->PUPDR & ~(pinPullUpPullDownMode << pinNumber*2)) | (pinPullUpPullDownMode<< pinNumber*2);
+
+	if(pinMode == GPIO_MODE_ALT_FN)
+	{
+		/*Pin mode*/
+		pGPIOHandle->pGPIOx->MODER = (pGPIOHandle->pGPIOx->MODER & ~(pinMode << pinNumber*2)) | (pinMode<< pinNumber*2);
+
+		uint8_t positionOfAFRegister = pinNumber / GPIO_PIN_NUM_8;
+		uint8_t pinNumberInAFRegister = pinNumber % GPIO_PIN_NUM_8;
+
+		MULTI_BIT_SET_VAL(pGPIOHandle->pGPIOx->AFR[positionOfAFRegister], pinAltFunMode, pinNumberInAFRegister*4, 4);
+	}
 }
 
 /*********************************************************************
