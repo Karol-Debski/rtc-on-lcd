@@ -19,9 +19,23 @@ typedef struct
 
 typedef struct
 {
-	I2C_RegDef_t	*pI2Cx;
+	I2C_RegDef_t*	pI2Cx;
 	I2C_Config_t	I2C_Config;
+	uint8_t*		pTxBuffer;
+	uint8_t*		pRxBuffer;
+	uint32_t		TxSize;
+	uint32_t		RxSize;
+	uint8_t			TxRxState;
+	uint8_t			slaveAddress;
+	uint8_t			endWithStop;
 }I2C_Handle_t;
+
+typedef enum EI2C_TxRxState
+{
+	I2C_Ready 		= 0,
+	I2C_BusyInRx 	= 1,
+	I2C_BusyInTx 	= 2,
+}EI2C_TxRxState;
 
 typedef enum EI2C_SCLSpeed
 {
@@ -56,6 +70,16 @@ typedef enum EI2C_CR1_BitFieldsPositions
 	I2C_CR1_SWRST = 15,
 }EI2C_CR1_BitFieldsPositions;
 
+typedef enum EI2C_CR2_BitFieldsPositions
+{
+	I2C_CR2_FREQ = 0,
+	I2C_CR2_ITERREN = 8,
+	I2C_CR2_ITEVTEN = 9,
+	I2C_CR2_ITBUFEN = 10,
+	I2C_CR2_DMAEN = 11,
+	I2C_CR2_LAST = 12,
+}EI2C_CR2_BitFieldsPositions;
+
 typedef enum EI2C_SR1_BitFieldsPositions
 {
 	I2C_SR1_SB = 0,
@@ -75,6 +99,28 @@ typedef enum EI2C_SR1_BitFieldsPositions
 }EI2C_SR1_BitFieldsPositions;
 
 /******************************** I2C Register Bit fields END ********************************/
+
+typedef enum EI2C_IT_Flag
+{
+	/* EVENT */
+	I2C_IT_EVENT_Master_StartBitSend = 0,
+	I2C_IT_EVENT_Master_AddressSent_Slave_AddressMatched = 1,
+	I2C_IT_EVENT_Master_10BitHeaderSent = 2,
+	I2C_IT_EVENT_Slave_StopReceived = 3,
+	I2C_IT_EVENT_DataByteTransferFinished = 4,
+	I2C_IT_EVENT_ReceiveBufferNotEmpty = 5,
+	I2C_IT_EVENT_TransmitBufferEmpty = 6,
+	/* ERROR */
+	I2C_IT_ERROR_BusError = 7,
+	I2C_IT_ERROR_Master_ArbitrationLoss = 8,
+	I2C_IT_ERROR_ACKFailure = 9,
+	I2C_IT_ERROR_OverrunOrUnderrun = 10,
+	I2C_IT_ERROR_PECError = 11,
+	I2C_IT_ERROR_TimeoutTlowError = 12,
+	I2C_IT_ERROR_SMBusAlert = 13,
+
+	I2C_IT_Unknown,
+}EI2C_IT_Flag;
 
 typedef enum EI2C_ClockPeriControlState
 {
@@ -96,8 +142,10 @@ typedef enum EI2C_IRQControlState
 
 typedef enum EI2C_OperationType
 {
-	I2C_Write=0,
-	I2C_Read=1,
+	I2C_Operation_Write=0,
+	I2C_Operation_Read=1,
+
+	I2C_Operation_Unknown,
 }EI2C_OperationType;
 
 /*
@@ -118,13 +166,22 @@ void I2C_PeripheralControl(I2C_RegDef_t* pI2Cx, EI2C_PeriControlState controlSta
 
 
 /*
- * Data send and receive
+ * Data send and receive blocking
  */
-void I2C_MasterSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
+uint8_t I2C_MasterSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
 
-void I2C_MasterReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
+uint8_t I2C_MasterReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
 
+uint8_t I2C_SlaveSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size);
 
+uint8_t I2C_SlaveReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t expectEndWithStop);
+
+/*
+ * Data send and receive interrupt
+ */
+uint8_t I2C_MasterSendDataIT(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
+
+uint8_t I2C_MasterReceiveDataIT(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop);
 
 
 /*
