@@ -12,8 +12,7 @@ static I2C_Handle_t I2C2_Handle = {.pI2Cx=I2C2};
 static I2C_Handle_t I2C3_Handle = {.pI2Cx=I2C3};
 
 
-uint16_t AHB_PreScalerValues [8] = {2, 4, 8, 16, 64, 128, 256, 512};
-uint16_t APBLowSpeed_PreScalerValues [4] = {2, 4, 8, 16};
+
 
 
 static void I2C_DisableACK(I2C_RegDef_t* pI2Cx)
@@ -148,59 +147,6 @@ static void I2C_DisableErrorEventBufferIT(I2C_RegDef_t* pI2Cx)
 }
 
 
-static uint32_t RCC_GetPCLK1Value()
-{
-	uint32_t systemClock=0;
-
-	uint8_t clockSource = MULTI_BIT_READ(RCC->CFGR, 2, 2);
-
-	if(clockSource == 0)
-	{
-		//HSI
-		systemClock=16000000;
-	}
-	else if(clockSource == 1)
-	{
-		//HSE
-		systemClock=8000000;
-	}
-	else if(clockSource == 2)
-	{
-		//PLL
-		//todo systemClock =
-	}
-
-	uint32_t preScalerAHBValue = MULTI_BIT_READ(RCC->CFGR, 4, 4);
-	uint32_t scalarAHB = 0;
-
-	if(preScalerAHBValue < 8)
-	{
-		scalarAHB = 1;
-	}
-	else
-	{
-		scalarAHB = AHB_PreScalerValues[preScalerAHBValue-8];
-	}
-
-	uint32_t preScalerAPBLowSpeedValue = MULTI_BIT_READ(RCC->CFGR, 10, 3);
-	uint32_t scalarAPBLowSpeed = 0;
-
-	if(preScalerAPBLowSpeedValue < 8)
-	{
-		scalarAPBLowSpeed = 1;
-	}
-	else
-	{
-		scalarAPBLowSpeed = APBLowSpeed_PreScalerValues[preScalerAPBLowSpeedValue-4];
-	}
-
-	uint32_t PCLK1Value = (systemClock/scalarAHB)/(scalarAPBLowSpeed);
-
-
-	return PCLK1Value;
-}
-
-
 void I2C_Init(I2C_Handle_t* pI2CHandle)
 {
 	I2C_PeriClockControl(pI2CHandle->pI2Cx, I2C_ClockPeriEnable);
@@ -275,14 +221,14 @@ void I2C_Init(I2C_Handle_t* pI2CHandle)
 
 uint8_t I2C_MasterSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop)
 {
-	I2C_Handle_t* I2Cx_Handle = getI2C_Handle(pI2Cx);
+	I2C_Handle_t* pI2Cx_Handle = getI2C_Handle(pI2Cx);
 
-	if(I2Cx_Handle->TxRxState != I2C_Ready)
+	if(pI2Cx_Handle->TxRxState != I2C_Ready)
 	{
 		return 1;
 	}
 
-	I2Cx_Handle->TxRxState = I2C_BusyInTx;
+	pI2Cx_Handle->TxRxState = I2C_BusyInTx;
 
 	I2C_GenerateStartCondition(pI2Cx);
 
@@ -309,7 +255,7 @@ uint8_t I2C_MasterSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size
 		I2C_GenerateStopCondition(pI2Cx);
 	}
 
-	I2Cx_Handle->TxRxState = I2C_Ready;
+	pI2Cx_Handle->TxRxState = I2C_Ready;
 
 	return 0;
 }
@@ -317,14 +263,14 @@ uint8_t I2C_MasterSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size
 
 uint8_t I2C_MasterReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop)
 {
-	I2C_Handle_t* I2Cx_Handle = getI2C_Handle(pI2Cx);
+	I2C_Handle_t* pI2Cx_Handle = getI2C_Handle(pI2Cx);
 
-	if(I2Cx_Handle->TxRxState != I2C_Ready)
+	if(pI2Cx_Handle->TxRxState != I2C_Ready)
 	{
 		return 1;
 	}
 
-	I2Cx_Handle->TxRxState = I2C_BusyInRx;
+	pI2Cx_Handle->TxRxState = I2C_BusyInRx;
 
 	I2C_GenerateStartCondition(pI2Cx);
 
@@ -369,7 +315,7 @@ uint8_t I2C_MasterReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t s
 		I2C_GenerateStopCondition(pI2Cx);
 	}
 
-	I2Cx_Handle->TxRxState = I2C_Ready;
+	pI2Cx_Handle->TxRxState = I2C_Ready;
 
 	return 0;
 }
@@ -377,14 +323,14 @@ uint8_t I2C_MasterReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t s
 
 uint8_t I2C_SlaveSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size)
 {
-	I2C_Handle_t* I2Cx_Handle = getI2C_Handle(pI2Cx);
+	I2C_Handle_t* pI2Cx_Handle = getI2C_Handle(pI2Cx);
 
-	if(I2Cx_Handle->TxRxState != I2C_Ready)
+	if(pI2Cx_Handle->TxRxState != I2C_Ready)
 	{
 		return 1;
 	}
 
-	I2Cx_Handle->TxRxState = I2C_BusyInTx;
+	pI2Cx_Handle->TxRxState = I2C_BusyInTx;
 
 	I2C_WaitUntilCompleateAddressPhase(pI2Cx);
 	I2C_ResumeTransmisionAfterAddressMatch(pI2Cx);
@@ -402,7 +348,7 @@ uint8_t I2C_SlaveSendData(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size)
 	I2C_ClearACKFailure(pI2Cx);
 
 
-	I2Cx_Handle->TxRxState = I2C_Ready;
+	pI2Cx_Handle->TxRxState = I2C_Ready;
 
 	return 0;
 }
@@ -445,21 +391,21 @@ uint8_t I2C_SlaveReceiveData(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t si
 
 uint8_t I2C_MasterSendDataIT(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop)
 {
-	I2C_Handle_t* I2Cx_Handle = getI2C_Handle(pI2Cx);
+	I2C_Handle_t* pI2Cx_Handle = getI2C_Handle(pI2Cx);
 
-	if(I2Cx_Handle->TxRxState != I2C_Ready)
+	if(pI2Cx_Handle->TxRxState != I2C_Ready)
 	{
 		return 1;
 	}
 
 
-	I2Cx_Handle->pTxBuffer = pTxBuffer;
-	I2Cx_Handle->TxSize = size;
-	I2Cx_Handle->slaveAddress = slaveAddr;
-	I2Cx_Handle->endWithStop = endWithStop;
+	pI2Cx_Handle->pTxBuffer = pTxBuffer;
+	pI2Cx_Handle->TxSize = size;
+	pI2Cx_Handle->slaveAddress = slaveAddr;
+	pI2Cx_Handle->endWithStop = endWithStop;
 
 
-	I2Cx_Handle->TxRxState = I2C_BusyInTx;
+	pI2Cx_Handle->TxRxState = I2C_BusyInTx;
 
 	I2C_GenerateStartCondition(pI2Cx);
 
@@ -471,23 +417,23 @@ uint8_t I2C_MasterSendDataIT(I2C_RegDef_t* pI2Cx, uint8_t* pTxBuffer, uint8_t si
 
 uint8_t I2C_MasterReceiveDataIT(I2C_RegDef_t* pI2Cx, uint8_t* pRxBuffer, uint8_t size, uint8_t slaveAddr, uint8_t endWithStop)
 {
-	I2C_Handle_t* I2Cx_Handle = getI2C_Handle(pI2Cx);
+	I2C_Handle_t* pI2Cx_Handle = getI2C_Handle(pI2Cx);
 
-	if(I2Cx_Handle->TxRxState != I2C_Ready)
+	if(pI2Cx_Handle->TxRxState != I2C_Ready)
 	{
 		return 1;
 	}
 
 
-	I2Cx_Handle->pRxBuffer = pRxBuffer;
-	I2Cx_Handle->RxSize = size;
-	I2Cx_Handle->slaveAddress = slaveAddr;
-	I2Cx_Handle->endWithStop = endWithStop;
+	pI2Cx_Handle->pRxBuffer = pRxBuffer;
+	pI2Cx_Handle->RxSize = size;
+	pI2Cx_Handle->slaveAddress = slaveAddr;
+	pI2Cx_Handle->endWithStop = endWithStop;
 
 
 
 
-	I2Cx_Handle->TxRxState = I2C_BusyInRx;
+	pI2Cx_Handle->TxRxState = I2C_BusyInRx;
 
 	I2C_GenerateStartCondition(pI2Cx);
 
