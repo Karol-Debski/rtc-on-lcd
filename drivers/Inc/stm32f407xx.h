@@ -184,9 +184,35 @@
 #define SPI3_I2S3_PERI_CLOCK_DIS() 	(RCC->APB1ENR &= ~(1U << 15))
 
 /*
- * Clock enable macros for USARTx peripherals
+ * Clock enable macros for USARTx/UARTx peripherals
  */
-#define	USART2_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1 << 17))
+#define	USART1_PERI_CLOCK_EN()	(RCC->APB2ENR |= (1U << 4))
+#define	USART2_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1U << 17))
+#define	USART3_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1U << 18))
+#define	UART4_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1U << 19))
+#define	UART5_PERI_CLOCK_EN()	(RCC->APB1ENR |= (1U << 20))
+#define	USART6_PERI_CLOCK_EN()	(RCC->APB2ENR |= (1U << 5))
+
+/*
+ * Clock disable macros for USARTx/UARTx peripherals
+ */
+#define	USART1_PERI_CLOCK_DIS()	(RCC->APB2ENR &= ~(1U << 4))
+#define	USART2_PERI_CLOCK_DIS()	(RCC->APB1ENR &= ~(1U << 17))
+#define	USART3_PERI_CLOCK_DIS()	(RCC->APB1ENR &= ~(1U << 18))
+#define	UART4_PERI_CLOCK_DIS()	(RCC->APB1ENR &= ~(1U << 19))
+#define	UART5_PERI_CLOCK_DIS()	(RCC->APB1ENR &= ~(1U << 20))
+#define	USART6_PERI_CLOCK_DIS()	(RCC->APB2ENR &= ~(1U << 5))
+
+/*
+ * Reset USARTx/UARTx registers MACRO
+ */
+#define USART1_REGISTERS_RESET()	do{(RCC->APB2RSTR |= (1U<<4)); (RCC->APB1RSTR &= ~(1U<<4));}while(0)
+#define USART2_REGISTERS_RESET() 	do{(RCC->APB1RSTR |= (1U<<17)); (RCC->APB1RSTR &= ~(1U<<17));}while(0)
+#define USART3_REGISTERS_RESET() 	do{(RCC->APB1RSTR |= (1U<<18)); (RCC->APB1RSTR &= ~(1U<<18));}while(0)
+#define UART4_REGISTERS_RESET() 	do{(RCC->APB1RSTR |= (1U<<19)); (RCC->APB1RSTR &= ~(1U<<19));}while(0)
+#define UART5_REGISTERS_RESET() 	do{(RCC->APB1RSTR |= (1U<<20)); (RCC->APB1RSTR &= ~(1U<<20));}while(0)
+#define USART6_REGISTERS_RESET() 	do{(RCC->APB2RSTR |= (1U<<5)); (RCC->APB1RSTR &= ~(1U<<5));}while(0)
+
 
 /*
  * Clock enable macros for SYSCFG peripherals
@@ -205,15 +231,11 @@
 #define I2C1_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 21))
 #define I2C2_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 22))
 #define I2C3_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 23))
+
 /*
  * Clock disable macros for SPIx peripherals
  */
 #define SPI1_PERI_CLOCK_DI() 	(RCC->APB2ENR &= ~(1 << 12))
-
-/*
- * Clock disable macros for USARTx peripherals
- */
-#define	USART2_PERI_CLOCK_DI()	(RCC->APB1ENR &= ~(1 << 17))
 
 /*
  * Clock disable macros for SYSCFG peripherals
@@ -240,18 +262,18 @@
 #define I2C2_BASEADDR						(APB1PERIPH_BASEADDR + 0x5800)
 #define I2C3_BASEADDR						(APB1PERIPH_BASEADDR + 0x5C00)
 
+
 #define SPI1_BASEADDR						(APB2PERIPH_BASEADDR + 0X3000U)
 #define SPI2_I2S2_BASEADDR					(APB1PERIPH_BASEADDR + 0x3800U)
 #define SPI3_I2S3_BASEADDR					(APB1PERIPH_BASEADDR + 0x3C00U)
 
 
-
-
-
+#define USART1_BASEADDR						(APB2PERIPH_BASEADDR + 0x1000)
 #define USART2_BASEADDR						(APB1PERIPH_BASEADDR + 0x4400)
 #define USART3_BASEADDR						(APB1PERIPH_BASEADDR + 0x4800)
 #define UART4_BASEADDR						(APB1PERIPH_BASEADDR + 0x4C00)
 #define UART5_BASEADDR						(APB1PERIPH_BASEADDR + 0x5000)
+#define USART6_BASEADDR						(APB2PERIPH_BASEADDR + 0x1400)
 
 
 /*
@@ -386,6 +408,22 @@ typedef struct
 	__vo uint32_t FLTR;
 }I2C_RegDef_t;
 
+
+/*
+ * peripheral register definition structure for USARTx/UARTx
+ */
+typedef struct
+{
+	__vo uint32_t SR;
+	__vo uint32_t DR;
+	__vo uint32_t BRR;
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t CR3;
+	__vo uint32_t GTPR;
+}USART_RegDef_t;
+
+
 /*
  * Peripherals definitions - base address type casted to x_RegDef_t)
  */
@@ -408,6 +446,12 @@ typedef struct
 #define I2C2 		((I2C_RegDef_t*)I2C2_BASEADDR)
 #define I2C3 		((I2C_RegDef_t*)I2C3_BASEADDR)
 
+#define USART1 		((USART_RegDef_t*)USART1_BASEADDR)
+#define USART2 		((USART_RegDef_t*)USART2_BASEADDR)
+#define USART3 		((USART_RegDef_t*)USART3_BASEADDR)
+#define UART4 		((USART_RegDef_t*)UART4_BASEADDR)
+#define UART5 		((USART_RegDef_t*)UART5_BASEADDR)
+#define USART6 		((USART_RegDef_t*)USART6_BASEADDR)
 
 
 
@@ -435,7 +479,12 @@ typedef struct
 #define IRQ_NUM_I2C2_ERROR	34
 #define IRQ_NUM_I2C3_EVENT	72
 #define IRQ_NUM_I2C3_ERROR	73
-
+#define IRQ_NUM_USART1		37
+#define IRQ_NUM_USART2		38
+#define IRQ_NUM_USART3		39
+#define IRQ_NUM_UART4		52
+#define IRQ_NUM_UART5		53
+#define IRQ_NUM_USART6		71
 
 /************************************************** STOP: MCU specific details **************************************************/
 
@@ -449,17 +498,20 @@ typedef struct
 
 
 #define BIT_MASK(bitNum)								((1U) << (bitNum))
-#define BIT_CLEAR(reg, bitNum)							((reg) & ~BIT_MASK(bitNum))
+#define BIT_CLEAR(reg, bitNum)							(reg = (reg) & ~BIT_MASK(bitNum))
+#define BIT_SET(reg, bitNum)							(reg = (reg) | BIT_MASK(bitNum))
 #define BIT_SET_VAL(reg, val, bitNum)					(reg = (BIT_CLEAR(reg, bitNum) | (((val) << bitNum) & BIT_MASK(bitNum))))
 #define BIT_READ(reg, bitNum)							(0U != ((reg) & BIT_MASK(bitNum)))
 
 #define MULTI_BIT_MASK(bitNum, len)						(((1U << len) - 1U) << bitNum)
-#define MULTI_BIT_CLEAR(reg, bitNum, len)				((reg) & ~(MULTI_BIT_MASK(bitNum, len)))
+#define MULTI_BIT_CLEAR(reg, bitNum, len)				(reg = (reg) & ~(MULTI_BIT_MASK(bitNum, len)))
 #define MULTI_BIT_SET_VAL(reg, val, bitNum, len)		(reg = (MULTI_BIT_CLEAR(reg, bitNum, len) | ((val << bitNum) & MULTI_BIT_MASK(bitNum, len))))
 #define MULTI_BIT_READ(reg, bitNum, len)				(((reg) & MULTI_BIT_MASK(bitNum, len)) >> bitNum)
 
+#include "stm32f407xx_rcc_driver.h"
 #include "stm32407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 #include "stm32f407xx_i2c_driver.h"
+#include "stm32f407xx_usart_driver.h"
 
 #endif /* INC_STM32F407XX_H_ */
