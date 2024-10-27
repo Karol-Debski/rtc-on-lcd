@@ -1,0 +1,6 @@
+Binary/
+*html
+.metadata/
+Debug/
+.launch
+*.launch
