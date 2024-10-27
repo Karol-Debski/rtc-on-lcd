@@ -1,6 +1,6 @@
 Binary/
 *html
-.settings
-.cproject
-.project
-
+.metadata/
+Debug/
+.launch
+*.launch
