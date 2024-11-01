@@ -14,12 +14,27 @@
 //#endif
 
 #include "stm32f407xx.h"
-
+#include "ds1307.h"
 
 
 int main(void)
 {
+	uint8_t val = ds1307Init();
+	RTC_time_t rtcTime1 = {0};
+	rtcTime1.seconds = 1;
+	rtcTime1.minutes = 1;
+	rtcTime1.hours = 1;
+	rtcTime1.timeFormat = DS1307_TimeFormat_24;
 
+
+	ds1307SetCurrentTime(&rtcTime1);
+
+	RTC_time_t rtcTime2 = {0};
+
+	for(int i = 1; i < 10000000; i++);
+
+
+	ds1307GetCurrentTime(&rtcTime2);
 	while(1);
 }
 
