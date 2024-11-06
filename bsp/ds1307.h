@@ -60,4 +60,6 @@ void ds1307GetCurrentTime(RTC_time_t* pRtcTime);
 void ds1307SetCurrentDate(RTC_date_t* pRtcDate);
 void ds1307GetCurrentDate(RTC_date_t* pRtcDate);
 
+char* getNameOfDay(uint8_t numberOfDay);
+
 #endif /* DS1307_H_ */

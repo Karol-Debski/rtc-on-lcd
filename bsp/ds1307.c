@@ -11,6 +11,10 @@
 
 char* daysOfWeek[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
+char* getNameOfDay(uint8_t numberOfDay)
+{
+	return daysOfWeek[numberOfDay-1];
+}
 
 static uint8_t ds1307ReadRegister(uint8_t addressOfRegister)
 {
